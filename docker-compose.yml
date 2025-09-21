@@ -1,0 +1,80 @@
+version: "3.8"
+
+# docker-compose for LexiClear (hackathon MVP)
+# - server: Node.js Express backend (Dockerfile: infra/Dockerfile.server)
+# - frontend: Vite/React frontend (Dockerfile: infra/Dockerfile.frontend)
+#
+# Usage:
+# 1. create a .env file (see .env.example) with OPENAI_API_KEY and other vars
+# 2. docker compose up --build
+# 3. Backend -> http://localhost:4000
+#    Frontend -> http://localhost:3000
+#
+# NOTE: This composition uses local FAISS or Pinecone (external). If you plan to use
+# Pinecone or another managed vector DB, configure the server to use it via env vars.
+
+services:
+  server:
+    build:
+      context: .
+      dockerfile: infra/Dockerfile.server
+      target: server
+    container_name: lexiclear-server
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - PORT=4000
+      # OPTIONAL: override in .env
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - EMBED_MODEL=${EMBED_MODEL:-text-embedding-3-small}
+      - LLM_MODEL=${LLM_MODEL:-gpt-4o-mini}
+      - RETENTION_DAYS=${RETENTION_DAYS:-7}
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./server/storage:/app/storage   # persist bundles & docs
+      - ./server:/app/server            # optional: mount server code for quick edits
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    networks:
+      - lexinet
+
+  frontend:
+    build:
+      context: .
+      dockerfile: infra/Dockerfile.frontend
+      target: frontend
+    container_name: lexiclear-frontend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - VITE_API_BASE=${VITE_API_BASE:-http://localhost:4000}
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app/frontend        # optional: mount frontend code for live edits
+    depends_on:
+      server:
+        condition: service_healthy
+    networks:
+      - lexinet
+
+# Optional local Redis cache for embeddings / session caching (uncomment if desired)
+# redis:
+#   image: redis:7-alpine
+#   container_name: lexiclear-redis
+#   restart: unless-stopped
+#   ports:
+#     - "6379:6379"
+#   networks:
+#     - lexinet
+
+networks:
+  lexinet:
+    driver: bridge

@@ -1,0 +1,53 @@
+/* UploadForm.css */
+
+.upload-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 6px 18px rgba(16, 24, 40, 0.08);
+  margin-bottom: 20px;
+}
+
+.upload-card h2 {
+  margin-top: 0;
+}
+
+.upload-textarea {
+  width: 100%;
+  min-height: 220px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  padding: 12px;
+  font-size: 14px;
+  resize: vertical;
+  background: #f9fafb;
+}
+
+.upload-controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.upload-select,
+.upload-btn {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.upload-btn-primary {
+  background: #2563eb;
+  color: white;
+  border: none;
+}
+
+.upload-btn-ghost {
+  background: transparent;
+  color: #2563eb;
+  border: 1px solid #93c5fd;
+}

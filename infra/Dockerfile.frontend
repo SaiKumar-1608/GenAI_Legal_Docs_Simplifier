@@ -1,0 +1,79 @@
+# infra/Dockerfile.frontend
+#
+# Multi-stage Dockerfile for the LexiClear frontend (Vite + React)
+# - Development: runs `npm run dev` (Vite dev server) listening on PORT (default 3000)
+# - Production: builds static assets and serves them with a lightweight static server
+#
+# Usage (dev):
+#   docker build -t lexiclear-frontend:dev --target=dev .
+#   docker run -p 3000:3000 -e NODE_ENV=development lexiclear-frontend:dev
+#
+# Usage (prod):
+#   docker build -t lexiclear-frontend:prod --target=prod .
+#   docker run -p 3000:3000 -e NODE_ENV=production lexiclear-frontend:prod
+
+############################################
+# Base stage: install dependencies
+############################################
+FROM node:18-alpine AS base
+WORKDIR /app
+
+# Install system deps needed for some postinstall scripts (optional)
+RUN apk add --no-cache bash git
+
+# Copy package manifests first to leverage Docker cache
+COPY frontend/package.json frontend/package-lock.json* ./frontend/
+WORKDIR /app/frontend
+
+# Install dependencies (use npm ci if package-lock.json exists)
+RUN if [ -f package-lock.json ]; then npm ci --prefer-offline --no-audit --progress=false; else npm install --no-audit --progress=false; fi
+
+# Copy the rest of the frontend source
+COPY frontend/ ./
+
+
+############################################
+# Dev stage: run Vite dev server (fast feedback)
+############################################
+FROM base AS dev
+
+ENV NODE_ENV=development
+ENV PORT=3000
+EXPOSE 3000
+
+# Ensure Vite binds to 0.0.0.0 so container is reachable from host
+ENV VITE_HOST=0.0.0.0
+
+# Default dev command (can be overridden by docker run)
+CMD ["sh", "-c", "npm run dev -- --host 0.0.0.0 --port ${PORT}"]
+
+
+############################################
+# Production build stage: build static assets
+############################################
+FROM base AS build
+
+ENV NODE_ENV=production
+
+# Build the app
+RUN npm run build
+
+
+############################################
+# Prod runtime stage: serve the built assets
+############################################
+FROM node:18-alpine AS prod
+
+WORKDIR /app
+ENV NODE_ENV=production
+ENV PORT=3000
+EXPOSE 3000
+
+# Install a tiny static server 'serve' (or use 'vite preview' if preferred)
+RUN npm install -g serve@14.2.0
+
+# Copy built assets from build stage
+COPY --from=build /app/frontend/dist ./dist
+
+# Use a small wrapper to run the static server on desired PORT
+CMD ["sh", "-c", "serve -s dist -l ${PORT}"]

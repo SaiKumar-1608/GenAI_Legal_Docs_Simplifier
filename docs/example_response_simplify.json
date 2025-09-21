@@ -1,0 +1,6 @@
+{
+  "bundle_id": "bundle-1695200000-1234",
+  "simplified": "Overall summary: This agreement prevents disclosure of secrets...",
+  "retrieved_chunk_ids": ["bundle-...-chunk-2", "bundle-...-chunk-3"],
+  "audit_link": "/api/audit/bundle-1695200000-1234"
+}

@@ -1,0 +1,11 @@
+# Use LF for code
+*.js text eol=lf
+*.jsx text eol=lf
+*.json text eol=lf
+*.css text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+
+# Allow Windows style for bat/ps1
+*.bat text eol=crlf
+*.ps1 text eol=crlf

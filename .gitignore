@@ -1,0 +1,17 @@
+# Node
+node_modules/
+frontend/dist/
+frontend/node_modules/
+server/node_modules/
+# Python venv
+.venv/
+# Env files
+.env
+.env.local
+server/.env
+# Generated bundles
+server/storage/bundles/*.json
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/

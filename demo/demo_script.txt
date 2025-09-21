@@ -1,0 +1,102 @@
+Demo script — LexiClear (3-minute hackathon demo)
+File: demo/demo_script.txt
+Purpose: exact spoken lines + UI actions + timings for a tight, repeatable 3-minute demo video and live demo.
+
+TOTAL TIME: 3:00 (180 seconds)
+Notes before start:
+- Ensure backend is running (http://localhost:4000) and frontend running (http://localhost:3000) OR deployed links are live.
+- Load two sample docs in the repo: sample_TnC.txt and sample_NDA.txt.
+- Open browser to the app home. Have terminal / logs hidden or off-camera.
+- Use low/model-deterministic setting (temperature 0–0.2) for consistent outputs.
+- If internet access to LLM is flaky, use the mocked LLM response file or run with saved outputs.
+
+---
+
+0:00–0:05 (5s) — Title & intro slide (visual)
+- On-screen text: "LexiClear — Legal language, made human"
+- Voiceover: "Hi — we're Team LexiClear."
+
+0:06–0:20 (15s) — Problem (show slide)
+- Show slide: "Problem: Legal documents are hard to understand"
+- Voiceover: "Legal documents are long and full of jargon. People and small businesses sign things they don't understand. We built LexiClear to make legal language clear, traceable, and safe."
+
+0:21–0:30 (9s) — Quick architecture (visual)
+- Show a small diagram (Frontend → Backend → Vector DB → LLM)
+- Voiceover: "We combine chunking, an MCP provenance bundle, vector retrieval, and constrained LLM prompting so every answer shows its source."
+
+0:31–0:50 (19s) — Demo start: Upload & Bundle creation
+- Action: Switch to live app. Show Upload / Paste area.
+- Spoken lines while performing actions:
+  "I'll paste a short Terms & Conditions text into the app and click Simplify."
+- UI action: Paste contents of sample_docs/sample_TnC.txt into text area.
+- Click "Simplify".
+- Expected visual: spinner / "Processing..." then results panel.
+
+0:51–1:05 (14s) — Show Simplified Summary
+- After response appears, point to the top:
+- Voiceover: "LexiClear produced this overall summary: (read the 1–2 sentence summary shown)."
+- Action: Highlight the overall summary on screen.
+- Tip: Pause 1–2 seconds to let judges read.
+
+1:06–1:25 (19s) — Clause-level rewrites + provenance
+- Voiceover: "Below are clause-level rewrites. Each simplified clause shows the original snippet and the chunk ID used as citation."
+- Action: Click one clause (e.g., 'Payments and Subscriptions' or 'Termination').
+- UI should show: Original clause snippet, simplified text, risk flag, and chunk id (e.g., bundle-...-chunk-3).
+- Read aloud: "For example, Clause: 'Payments and Subscriptions' simplified: 'Fees are non-refundable except as required by law' — Source: chunk-3."
+
+1:26–1:45 (19s) — Contextual Q&A (chat) demo
+- Voiceover: "Now I'll ask a question about termination rights. The assistant answers and cites the exact clause it used."
+- Action: Open chat widget, type: "What is the termination notice period?"
+- Click Send.
+- Expected: Answer: "You must give 30 days' written notice. Source: bundle-...-chunk-2"
+- Read the answer aloud and point to citation. Emphasize provenance.
+
+1:46–2:05 (19s) — Risk flagging & conservative behavior
+- Voiceover: "We flag risky clauses and require human review for high-risk items."
+- Action: Show a clause flagged "Medium" or "High". Click to expand risk note.
+- Read risk note: e.g., "Risk: Medium — limits future use of information. Recommend lawyer review."
+- Mention UI shows "Request Lawyer Review" button (optional).
+
+2:06–2:25 (19s) — Audit view (MCP bundle)
+- Voiceover: "Every bundle has an MCP audit you can open to see provenance info."
+- Action: Click Audit or Audit link (or show /api/audit/<bundle_id> JSON).
+- Show JSON Bundle: bundle_id, chunk list, source_checksum, index_metadata.
+- Briefly say: "This JSON is stored and can be downloaded for legal audit."
+
+2:26–2:45 (19s) — Export & workflow note
+- Voiceover: "You can export simplified docs and the audit report for lawyer review or record-keeping."
+- Action: Click Export (or show 'Download simplified doc' button).
+- Show downloaded file list or mention file saved.
+
+2:46–2:55 (9s) — Safety & limitations
+- Voiceover: "Important: LexiClear is not legal advice. We aim to reduce confusion and surface risks, but recommend lawyer review for critical decisions."
+
+2:56–3:00 (4s) — Closing
+- On-screen: Team name + GitHub link + Prototype URL
+- Voiceover: "Thanks — we are Team LexiClear. GitHub: <repo link>. Prototype: <deployed link>."
+
+---
+
+Appendix — Demo checklist (quick pre-flight)
+- [ ] Start backend: `cd server && npm run dev` (ensure OPENAI_API_KEY in .env)
+- [ ] Start frontend: `cd frontend && npm run dev`
+- [ ] Load app at http://localhost:3000 (or deployed URL)
+- [ ] Sample docs available: sample_TnC.txt, sample_NDA.txt
+- [ ] Set deterministic model (temperature 0–0.2) in server env
+- [ ] Test the 3 flows once before recording:
+    - Simplify (paste sample_TnC.txt) — verify summary + clauses appear
+    - Ask (sample question about termination) — verify citation present
+    - Audit (open MCP JSON) — verify chunk ids present
+
+Backup plan (if live LLM fails)
+- Use saved mocked responses: Have a pre-recorded browser session video or load local JSON responses so UI shows results even offline. Keep this as a fallback recording.
+
+Recording tips
+- Use screen recorder (OBS or built-in OS recorder). Record at 720p or 1080p.
+- Record audio with a decent mic; read lines naturally and at slightly faster than normal pace to fit time.
+- Trim any long pauses; keep transitions snappy.
+- Add captions for each major step (Simplify / Q&A / Audit).
+
+---
+
+End of demo script.

@@ -1,0 +1,69 @@
+# infra/Dockerfile.server
+#
+# Multi-stage Dockerfile for the LexiClear Node.js Express backend.
+# - Builds dependencies in a thin build stage
+# - Produces a small production image
+#
+# Expects the server code to be at ./server relative to the repo root when building
+# (i.e., docker build --file infra/Dockerfile.server . )
+#
+# The docker-compose.yml provided earlier mounts ./server into the container for live edits
+# during development. For production, remove that volume and rebuild the image.
+
+########################################
+# Stage 1 — install dependencies
+########################################
+FROM node:18-alpine AS deps
+
+# Create app directory
+WORKDIR /usr/src/app
+
+# Copy package manifests (assumes server/package*.json exist)
+# Copy only package files first to leverage Docker cache for deps
+COPY server/package.json server/package-lock.json* ./server/
+# If package-lock isn't present, npm will still work with package.json
+WORKDIR /usr/src/app/server
+
+# Install dependencies (production only). Use npm ci if lockfile exists.
+RUN if [ -f package-lock.json ]; then \
+      npm ci --only=production; \
+    else \
+      npm install --only=production; \
+    fi
+
+########################################
+# Stage 2 — build final image
+########################################
+FROM node:18-alpine AS runtime
+
+# Create non-root user for better security
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
+WORKDIR /usr/src/app
+# Copy installed node_modules from deps stage
+COPY --from=deps /usr/src/app/server/node_modules ./server/node_modules
+
+# Copy server source
+COPY server ./server
+
+# Ensure ownership
+RUN chown -R appuser:appgroup /usr/src/app
+
+USER appuser
+
+# Expose port used by server
+ENV PORT=4000
+EXPOSE 4000
+
+# Environment defaults (can be overridden via docker-compose / env file)
+ENV NODE_ENV=production
+ENV RETENTION_DAYS=7
+
+# Health endpoint depends on application exposing /health (optional)
+# If your server doesn't implement /health, you can remove the HEALTHCHECK.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+  CMD wget -qO- --timeout=2 http://localhost:${PORT}/health || exit 1
+
+# Start the server
+WORKDIR /usr/src/app/server
+CMD ["node", "index.js"]
